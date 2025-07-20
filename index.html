@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moteur de Recherche sur l'intelligence artificielle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            min-width: 120px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .options {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .max-results {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .article {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .article:hover {
+            transform: translateY(-3px);
+        }
+
+        .article-title {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .article-title a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .article-title a:hover {
+            text-decoration: underline;
+        }
+
+        .article-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .meta-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .article-summary {
+            color: #444;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .category-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .stats h2 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .stats p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+            
+            .options {
+                justify-content: center;
+            }
+
+            .stats {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Moteur de Recherche sur l'intelligence artificielle</h1>
+            <p>Recherchez parmi des milliers d'articles </p>
+        </div>
+
+        <div class="search-container">
+            <form id="searchForm" class="search-form">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Recherchez des articles scientifiques... (ex: machine learning, quantum physics)"
+                    required
+                >
+                <button type="submit" class="search-btn" id="searchBtn">
+                    Rechercher
+                </button>
+            </form>
+
+            <div class="options">
+                <label for="maxResults">Nombre de résultats:</label>
+                <select id="maxResults" class="max-results">
+                    <option value="5">5 articles</option>
+                    <option value="10" selected>10 articles</option>
+                    <option value="20">20 articles</option>
+                    <option value="50">50 articles</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>🔍 Recherche en cours...</p>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header" id="resultsHeader"></div>
+            <div id="articlesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion du formulaire de recherche
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            const maxResults = document.getElementById('maxResults').value;
+            
+            if (!query) {
+                alert('Veuillez saisir un terme de recherche');
+                return;
+            }
+
+            // Afficher le loading et cacher les résultats précédents
+            showLoading(true);
+            hideResults();
+            disableSearchButton(true);
+
+            try {
+                // Faire la requête de recherche
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}&max_results=${maxResults}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    displayResults(data);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Une erreur est survenue lors de la recherche. Veuillez réessayer.');
+            } finally {
+                showLoading(false);
+                disableSearchButton(false);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function hideResults() {
+            document.getElementById('resultsContainer').style.display = 'none';
+        }
+
+        function disableSearchButton(disabled) {
+            const btn = document.getElementById('searchBtn');
+            btn.disabled = disabled;
+            btn.textContent = disabled ? 'Recherche...' : 'Rechercher';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('articlesContainer');
+            container.innerHTML = `<div class="error">${message}</div>`;
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        function displayResults(data) {
+            const resultsHeader = document.getElementById('resultsHeader');
+            const articlesContainer = document.getElementById('articlesContainer');
+            
+            // Afficher le header des résultats
+            resultsHeader.innerHTML = `
+                <div class="stats">
+                    <h2>📊 Résultats pour "${data.query}"</h2>
+                    <p>${data.total_results} article(s) trouvé(s)</p>
+                </div>
+            `;
+
+            // Afficher les articles
+            if (data.articles.length === 0) {
+                articlesContainer.innerHTML = `
+                    <div class="error">
+                        Aucun article trouvé pour cette recherche. 
+                        Essayez avec des termes différents ou plus généraux.
+                    </div>
+                `;
+            } else {
+                articlesContainer.innerHTML = data.articles.map((article, index) => `
+                    <div class="article">
+                        <h3 class="article-title">
+                            <a href="${article.link}" target="_blank" rel="noopener">
+                                ${article.title}
+                            </a>
+                        </h3>
+                        
+                        <div class="article-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">👥</span>
+                                <span>${article.authors}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span>${article.date}</span>
+                            </div>
+                        </div>
+
+                        <p class="article-summary">${article.summary}</p>
+                        
+                        <span class="category-tag">${article.category}</span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('resultsContainer').style.display = 'block';
+            
+            // Scroll vers les résultats
+            document.getElementById('resultsContainer').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // Recherche automatique quand on appuie sur Entrée
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Focus automatique sur le champ de recherche au chargement
+        window.addEventListener('load', function() {
+            document.getElementById('searchInput').focus();
+        });
+
+        // Exemples de recherche populaires
+        const examples = [
+            'machine learning',
+            'quantum computing', 
+            'artificial intelligence',
+            'deep learning',
+            'neural networks',
+            'computer vision',
+            'natural language processing'
+        ];
+
+        // Suggestion d'exemples au survol du champ
+        document.getElementById('searchInput').addEventListener('focus', function() {
+            if (this.value === '') {
+                const randomExample = examples[Math.floor(Math.random() * examples.length)];
+                this.placeholder = `Essayez par exemple: ${randomExample}`;
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('blur', function() {
+            this.placeholder = 'Recherchez des articles scientifiques... (ex: machine learning, quantum physics)';
+        });
+    </script>
+</body>
+</html>
